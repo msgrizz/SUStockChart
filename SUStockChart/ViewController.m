@@ -8,6 +8,7 @@
 
 #import "ViewController.h"
 #import "Masonry.h"
+#import "SSCDataSource.h"
 
 @interface ViewController ()
 @property (nonatomic, strong) UIButton *button;
@@ -20,6 +21,8 @@
     
     [self.view addSubview:self.button];
     [self makeConstraints];
+    
+    [SSCDataSource loadData];
 }
 
 - (void)didReceiveMemoryWarning {
