@@ -9,6 +9,7 @@
 #import "ViewController.h"
 #import "Masonry.h"
 #import "SSCDataSource.h"
+#import "SSCChartViewController.h"
 
 @interface ViewController ()
 @property (nonatomic, strong) UIButton *button;
@@ -30,6 +31,13 @@
     // Dispose of any resources that can be recreated.
 }
 
+#pragma mark - Action
+
+- (void)buttonTapped:(UIButton *)sender{
+    SSCChartViewController *toViewController = [[SSCChartViewController alloc] init];
+    [self presentViewController:toViewController animated:NO completion:NULL];
+}
+
 #pragma mark - Constraints
     
 - (void)makeConstraints{
@@ -46,6 +54,7 @@
         _button = [UIButton new];
         [_button setTitle:@"Launch Chart" forState:UIControlStateNormal];
         [_button setTitleColor:[UIColor blueColor] forState:UIControlStateNormal];
+        [_button addTarget:self action:@selector(buttonTapped:) forControlEvents:UIControlEventTouchUpInside];
     }
     return _button;
 }

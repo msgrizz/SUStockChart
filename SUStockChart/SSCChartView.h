@@ -1,15 +1,13 @@
 //
-//  SSCDataSource.h
+//  SSCChartView.h
 //  SUStockChart
 //
 //  Created by Su Xiaozhou on 23/10/2016.
 //  Copyright © 2016 SXZ. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
-@interface SSCDataSource : NSObject
-
-+ (NSArray *)loadData;
-
+@interface SSCChartView : UIView
+- (void)setContent:(NSArray *)data;
 @end
