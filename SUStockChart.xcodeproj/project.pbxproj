@@ -88,11 +88,9 @@
 			isa = PBXGroup;
 			children = (
 				94E69BC41DBCEC9E009A08E1 /* category */,
-				94E69BBF1DBCEBF7009A08E1 /* viewmodel */,
 				94E69BB21DBCB95D009A08E1 /* util */,
+				94E69BBF1DBCEBF7009A08E1 /* viewmodel */,
 				94EF5FBB1DBCB809007C89F6 /* model */,
-				94EF5FBC1DBCB85C007C89F6 /* SSCDayModel.h */,
-				94EF5FBD1DBCB85C007C89F6 /* SSCDayModel.m */,
 				94EF5FB41DBCA9D9007C89F6 /* source */,
 			);
 			name = base;
@@ -107,12 +105,14 @@
 			name = view;
 			sourceTree = "<group>";
 		};
-		94E69BB81DBCE6CD009A08E1 /* display */ = {
+		94E69BB81DBCE6CD009A08E1 /* chart */ = {
 			isa = PBXGroup;
 			children = (
+				94E69BBC1DBCE7E7009A08E1 /* SSCChartViewController.h */,
+				94E69BBD1DBCE7E7009A08E1 /* SSCChartViewController.m */,
 				94E69BB71DBCE6C0009A08E1 /* view */,
 			);
-			name = display;
+			name = chart;
 			sourceTree = "<group>";
 		};
 		94E69BBF1DBCEBF7009A08E1 /* viewmodel */ = {
@@ -158,9 +158,7 @@
 				94EF5FA01DBC67B5007C89F6 /* AppDelegate.m */,
 				94EF5FA21DBC67B5007C89F6 /* ViewController.h */,
 				94EF5FA31DBC67B5007C89F6 /* ViewController.m */,
-				94E69BBC1DBCE7E7009A08E1 /* SSCChartViewController.h */,
-				94E69BBD1DBCE7E7009A08E1 /* SSCChartViewController.m */,
-				94E69BB81DBCE6CD009A08E1 /* display */,
+				94E69BB81DBCE6CD009A08E1 /* chart */,
 				94E69BB61DBCE695009A08E1 /* base */,
 				94EF5FA51DBC67B5007C89F6 /* Main.storyboard */,
 				94EF5FA81DBC67B5007C89F6 /* Assets.xcassets */,
@@ -193,6 +191,8 @@
 		94EF5FBB1DBCB809007C89F6 /* model */ = {
 			isa = PBXGroup;
 			children = (
+				94EF5FBC1DBCB85C007C89F6 /* SSCDayModel.h */,
+				94EF5FBD1DBCB85C007C89F6 /* SSCDayModel.m */,
 			);
 			name = model;
 			sourceTree = "<group>";

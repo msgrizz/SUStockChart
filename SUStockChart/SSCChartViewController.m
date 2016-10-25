@@ -28,8 +28,6 @@
     
     [self makeConstraints];
     
-//    [self.chartView setNeedsDisplay];
-    
     NSArray *dataSource = [SSCDataSource loadData];
     [_chartView setContent:dataSource];
 }
