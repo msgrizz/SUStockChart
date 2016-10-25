@@ -28,7 +28,11 @@
         dayModel.pChange = [record[@"pchange"] doubleValue];
         dayModel.turnover = [record[@"turnover"] doubleValue];
         dayModel.voTurnover = [record[@"voturnover"] doubleValue];
-        [modelList addObject:dayModel];
+        
+        // escape closed day
+        if (dayModel.tOpen > 0.) {
+            [modelList addObject:dayModel];
+        }
     }
     return modelList;
 }

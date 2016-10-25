@@ -52,7 +52,7 @@
 - (UIButton *)button{
     if (!_button) {
         _button = [UIButton new];
-        [_button setTitle:@"Launch Chart" forState:UIControlStateNormal];
+        [_button setTitle:@"i am demo" forState:UIControlStateNormal];
         [_button setTitleColor:[UIColor blueColor] forState:UIControlStateNormal];
         [_button addTarget:self action:@selector(buttonTapped:) forControlEvents:UIControlEventTouchUpInside];
     }

@@ -13,5 +13,23 @@
     return [UIColor lightGrayColor];
 }
 
++ (UIColor *)ssc_riseColor{
+    return [UIColor redColor];
+}
 
++ (UIColor *)ssc_dropColor{
+    return [UIColor greenColor];
+}
+
++ (UIColor *)ssc_ma5Color{
+    return [UIColor magentaColor];
+}
+
++ (UIColor *)ssc_ma10Color{
+    return [UIColor yellowColor];
+}
+
++ (UIColor *)ssc_ma20Color{
+    return [UIColor cyanColor];
+}
 @end

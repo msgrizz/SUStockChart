@@ -9,6 +9,7 @@
 #import "SSCChartViewController.h"
 #import "Masonry.h"
 #import "SSCChartView.h"
+#import "SSCDataSource.h"
 
 @interface SSCChartViewController ()
 @property (nonatomic, strong) UILabel *nameLabel;
@@ -26,6 +27,11 @@
     [self.view addSubview:self.chartView];
     
     [self makeConstraints];
+    
+//    [self.chartView setNeedsDisplay];
+    
+    NSArray *dataSource = [SSCDataSource loadData];
+    [_chartView setContent:dataSource];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -75,6 +81,8 @@
 - (UIButton *)closeButton{
     if (!_closeButton) {
         _closeButton = [UIButton new];
+        [_closeButton setTitle:@"X" forState:UIControlStateNormal];
+        [_closeButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         [_closeButton addTarget:self action:@selector(buttonTapped:) forControlEvents:UIControlEventTouchUpInside];
     }
     return _closeButton;
