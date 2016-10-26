@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 
 @interface UIColor (SSCColorStyle)
++ (UIColor *)ssc_backgroundColor;
 + (UIColor *)ssc_gridLineColor;
 + (UIColor *)ssc_riseColor;
 + (UIColor *)ssc_dropColor;

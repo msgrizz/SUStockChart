@@ -20,6 +20,8 @@
     for (NSDictionary *record in result) {
         SSCDayModel *dayModel = [SSCDayModel new];
         dayModel.dateStr = record[@"date_str"];
+        dayModel.name = record[@"name"];
+        dayModel.code = record[@"code"];
         dayModel.tClose = [record[@"tclose"] doubleValue];
         dayModel.high = [record[@"high"] doubleValue];
         dayModel.low = [record[@"low"] doubleValue];

@@ -11,6 +11,7 @@
 
 #import "SSCDayModel.h"
 #import "SSCDayViewModel.h"
+#import "SSCCalc.h"
 
 #define MPOINT(x, y) CGPointMake(x, y)
 
@@ -139,14 +140,9 @@ static NSString *kSSCChartIndexChangeKey = @"indexChange";
     // data will display
     NSArray *dataWillDisplayList = [_dataList subarrayWithRange:NSMakeRange(currentIndex, candleCount)];
     
-    NSNumber *maxVoTurnoverNum = [dataWillDisplayList valueForKeyPath:@"@max.voTurnover"];
-    
-    NSNumber *minPriceNum = [dataWillDisplayList valueForKeyPath:@"@min.low"];
-    NSNumber *maxPriceNum = [dataWillDisplayList valueForKeyPath:@"@max.high"];
-    
-    double maxVoTurnover = [maxVoTurnoverNum doubleValue];
-    double minPrice = [minPriceNum doubleValue];
-    double maxPrice = [maxPriceNum doubleValue];
+    double maxVoTurnover = [SSCCalc ssc_maxVoturnover:dataWillDisplayList];
+    double minPrice = [SSCCalc ssc_minPrice:dataWillDisplayList];
+    double maxPrice = [SSCCalc ssc_maxPrice:dataWillDisplayList];
     
     CGFloat priceScope = fabs(maxPrice - minPrice);
     
@@ -213,16 +209,22 @@ static NSString *kSSCChartIndexChangeKey = @"indexChange";
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextClearRect(context, rect);
     
+    [[UIColor ssc_backgroundColor] setFill];
+    UIRectFill(rect);
+    
     // Gridding
     CGContextSetStrokeColorWithColor(context, [UIColor ssc_gridLineColor].CGColor);
     CGContextSetLineWidth(context, 1.0f);
     CGContextSetAlpha(context, .5);
     
+    
+    
     CGFloat mainBoxheight = rect.size.height * kSSCChartMainBoxHeightPercent;
     CGFloat hLineY_0 = 0.;
-    CGFloat hLineY_1 = mainBoxheight / 3.;
+    CGFloat hLineY_1 = mainBoxheight / 4.;
     CGFloat hLineY_2 = hLineY_1 * 2.;
-    CGFloat hLineY_3 = mainBoxheight;
+    CGFloat hLineY_3 = hLineY_1 * 3.;
+    CGFloat hLineY_4 = mainBoxheight;
     
     //sub box
     CGFloat hLineY_a = mainBoxheight + kSSCChartViewGap;
@@ -239,13 +241,14 @@ static NSString *kSSCChartIndexChangeKey = @"indexChange";
     [self drawContext:context fromPoint:MPOINT(marginLeft, hLineY_1) toPoint:MPOINT(rightX, hLineY_1)];
     [self drawContext:context fromPoint:MPOINT(marginLeft, hLineY_2) toPoint:MPOINT(rightX, hLineY_2)];
     [self drawContext:context fromPoint:MPOINT(marginLeft, hLineY_3) toPoint:MPOINT(rightX, hLineY_3)];
+    [self drawContext:context fromPoint:MPOINT(marginLeft, hLineY_4) toPoint:MPOINT(rightX, hLineY_4)];
     
     [self drawContext:context fromPoint:MPOINT(marginLeft, hLineY_a) toPoint:MPOINT(rightX, hLineY_a)];
     [self drawContext:context fromPoint:MPOINT(marginLeft, hLineY_b) toPoint:MPOINT(rightX, hLineY_b)];
     
     // vertical line
-    [self drawContext:context fromPoint:MPOINT(marginLeft, 0.) toPoint:MPOINT(marginLeft, hLineY_3)];
-    [self drawContext:context fromPoint:MPOINT(rightX, 0.) toPoint:MPOINT(rightX, hLineY_3)];
+    [self drawContext:context fromPoint:MPOINT(marginLeft, 0.) toPoint:MPOINT(marginLeft, mainBoxheight)];
+    [self drawContext:context fromPoint:MPOINT(rightX, 0.) toPoint:MPOINT(rightX, mainBoxheight)];
     
     [self drawContext:context fromPoint:MPOINT(marginLeft, hLineY_a) toPoint:MPOINT(marginLeft, hLineY_b)];
     [self drawContext:context fromPoint:MPOINT(rightX, hLineY_a) toPoint:MPOINT(rightX, hLineY_b)];
@@ -253,6 +256,50 @@ static NSString *kSSCChartIndexChangeKey = @"indexChange";
     CGContextStrokePath(context);
     CGContextSetAlpha(context, 1.0);
     
+    // Text
+    NSArray *dataDisplayList = [_dataList subarrayWithRange:NSMakeRange(_currentIndex, _viewModelList.count)];
+
+    double maxVoTurnover = [SSCCalc ssc_maxVoturnover:dataDisplayList];
+    double minPrice = [SSCCalc ssc_minPrice:dataDisplayList];
+    double maxPrice = [SSCCalc ssc_maxPrice:dataDisplayList];
+    
+    double priceScope = fabs(maxPrice - minPrice);
+    double priceGap = priceScope / 4.;
+    NSString *textA0 = [NSString stringWithFormat:@"%.2f", maxPrice];
+    NSString *textA1 = [NSString stringWithFormat:@"%.2f", maxPrice - priceGap * 1.];
+    NSString *textA2 = [NSString stringWithFormat:@"%.2f", maxPrice - priceGap * 2.];
+    NSString *textA3 = [NSString stringWithFormat:@"%.2f", maxPrice - priceGap * 3.];
+    NSString *textA4 = [NSString stringWithFormat:@"%.2f", minPrice];
+    
+    NSMutableParagraphStyle *style = [[NSMutableParagraphStyle alloc] init];
+    [style setAlignment:NSTextAlignmentRight];
+    NSDictionary *attr = @{
+                             NSFontAttributeName              : [UIFont systemFontOfSize:8.],
+                             NSForegroundColorAttributeName   : [UIColor whiteColor],
+                             NSParagraphStyleAttributeName    : style
+                             };
+    
+    CGRect rectA0 = CGRectMake(0., 0., marginLeft - 5., 8.);
+    CGRect rectA1 = CGRectMake(0., hLineY_1-8, marginLeft - 5., 8.);
+    CGRect rectA2 = CGRectMake(0., hLineY_2-8, marginLeft - 5., 8.);
+    CGRect rectA3 = CGRectMake(0., hLineY_3-8, marginLeft - 5., 8.);
+    CGRect rectA4 = CGRectMake(0., hLineY_4-8, marginLeft - 5., 8.);
+    
+    [textA0 drawInRect:rectA0 withAttributes:attr];
+    [textA1 drawInRect:rectA1 withAttributes:attr];
+    [textA2 drawInRect:rectA2 withAttributes:attr];
+    [textA3 drawInRect:rectA3 withAttributes:attr];
+    [textA4 drawInRect:rectA4 withAttributes:attr];
+    
+    CGRect rectB0 = CGRectMake(0., hLineY_a, marginLeft - 5., 8.);
+    CGRect rectB1 = CGRectMake(0., rect.size.height - 10., marginLeft - 5., 8.);
+    
+    NSString *textB0 = [NSString stringWithFormat:@"%.2f万", maxVoTurnover / 10000 / 100];
+    NSString *textB1 = [NSString stringWithFormat:@"万手"];
+    [textB0 drawInRect:rectB0 withAttributes:attr];
+    [textB1 drawInRect:rectB1 withAttributes:attr];
+    
+    // Candle
     for (SSCDayViewModel *viewModel in _viewModelList) {
         CGContextSetStrokeColorWithColor(context, viewModel.color);
         
@@ -283,21 +330,41 @@ static NSString *kSSCChartIndexChangeKey = @"indexChange";
 }
 
 - (void)drawMALineContext:(CGContextRef)context type:(NSInteger)type color:(UIColor *)color{
-    NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
-        SSCDayViewModel *item = (SSCDayViewModel *)evaluatedObject;
+  
+//    NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
+//        SSCDayViewModel *item = (SSCDayViewModel *)evaluatedObject;
+//        switch (type) {
+//            case 5:
+//                return item.ma5Point.x >= 0.0;
+//                break;
+//            case 10:
+//                return item.ma10Point.x >= 0.0;
+//                break;
+//            case 20:
+//            default:
+//                return item.ma20Point.x >= 0.0;
+//        }
+//    }];
+//    NSArray *lineArray = [_viewModelList filteredArrayUsingPredicate:predicate];
+    NSMutableArray *lineArray = [[NSMutableArray alloc] initWithCapacity:_viewModelList.count];
+    for (SSCDayViewModel *viewModel in _viewModelList) {
+        CGPoint point;
         switch (type) {
             case 5:
-                return item.ma5Point.x >= 0.0;
+                point = viewModel.ma5Point;
                 break;
             case 10:
-                return item.ma10Point.x >= 0.0;
+                point = viewModel.ma10Point;
                 break;
             case 20:
             default:
-                return item.ma20Point.x >= 0.0;
+                point = viewModel.ma20Point;
+                break;
         }
-    }];
-    NSArray *lineArray = [_viewModelList filteredArrayUsingPredicate:predicate];
+        if (point.x >= kSSCChartViewMarginLeft && point.y >= 0.) {
+            [lineArray addObject:viewModel];
+        }
+    }
     NSInteger count = [lineArray count];
     CGPoint addLines[count];
     for (NSInteger j = 0; j < count; j++) {
@@ -315,11 +382,8 @@ static NSString *kSSCChartIndexChangeKey = @"indexChange";
                 point = viewModel.ma20Point;
                 break;
         }
-   
-        if (point.y > 0) {
-            addLines[j].x = point.x;
-            addLines[j].y = point.y;
-        }
+        addLines[j].x = point.x;
+        addLines[j].y = point.y;
     }
     
     CGContextBeginPath(context);
@@ -333,6 +397,5 @@ static NSString *kSSCChartIndexChangeKey = @"indexChange";
     CGContextMoveToPoint(context, fromPoint.x, fromPoint.y);
     CGContextAddLineToPoint(context, toPoint.x, toPoint.y);
 }
-
 
 @end

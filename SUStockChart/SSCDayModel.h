@@ -11,6 +11,8 @@
 @interface SSCDayModel : NSObject
 
 @property NSString *dateStr;
+@property NSString *name;
+@property NSString *code;
 @property double tClose;
 @property double high;
 @property double low;
