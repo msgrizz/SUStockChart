@@ -18,5 +18,8 @@
 @interface SSCContextHelper : NSObject
 
 + (NSArray *)viewModelListFromRawData:(NSArray *)dataList viewSize:(CGSize)viewSize candleWidth:(CGFloat)candleWidth currentIndex:(NSInteger)currentIndex;
-
++ (void)maLineContext:(CGContextRef)context type:(NSInteger)type color:(UIColor *)color viewModelList:(NSArray *)viewModelList;
++ (void)textContext:(CGContextRef)context dataDisplayList:(NSArray *)dataDisplayList rect:(CGRect)rect;
++ (void)gridContext:(CGContextRef)context rect:(CGRect)rect;
++ (void)drawContext:(CGContextRef)context fromPoint:(CGPoint)fromPoint toPoint:(CGPoint)toPoint;
 @end
