@@ -9,7 +9,9 @@
 #import <Foundation/Foundation.h>
 
 @interface SSCCalc : NSObject
+
 + (double)ssc_maxPrice:(NSArray *)list;
 + (double)ssc_minPrice:(NSArray *)list;
 + (double)ssc_maxVoturnover:(NSArray *)list;
+
 @end

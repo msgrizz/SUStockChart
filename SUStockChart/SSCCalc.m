@@ -9,6 +9,7 @@
 #import "SSCCalc.h"
 
 @implementation SSCCalc
+
 + (double)ssc_maxPrice:(NSArray *)list{
     NSNumber *maxPriceNum = [list valueForKeyPath:@"@max.high"];
     return [maxPriceNum doubleValue];
@@ -18,8 +19,10 @@
     NSNumber *minPriceNum = [list valueForKeyPath:@"@min.low"];
     return [minPriceNum doubleValue];
 }
+
 + (double)ssc_maxVoturnover:(NSArray *)list{
     NSNumber *maxVoTurnoverNum = [list valueForKeyPath:@"@max.voTurnover"];
     return [maxVoTurnoverNum doubleValue];
 }
+
 @end

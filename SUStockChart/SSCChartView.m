@@ -7,30 +7,20 @@
 //
 
 #import "SSCChartView.h"
-#import "UIColor+SSCColorStyle.h"
-
-#import "SSCDayModel.h"
-#import "SSCDayViewModel.h"
-#import "SSCCalc.h"
-
-#define MPOINT(x, y) CGPointMake(x, y)
-
-static CGFloat const kSSCChartViewMarginLeft = 30.;
-static CGFloat const kSSCChartViewGap = 9.;
-static CGFloat const kSSCChartMainBoxHeightPercent = 0.7;
-static CGFloat const kSSCChartCandleSpace = 1.;
-static CGFloat const kSSCChartCandleLampwickWidth = 1.;
-static NSString *kSSCChartIndexChangeKey = @"indexChange";
+#import "SSCContextHelper.h"
 
 @interface SSCChartView()<UIGestureRecognizerDelegate>
 @property NSInteger currentIndex; //First one from right side on chart
 @property NSArray *dataList;
-@property NSMutableArray *viewModelList;
+@property NSArray *viewModelList;
 @property CGFloat candleBodyWidth;
+
+@property (nonatomic, strong) UILabel *hiLabel;
 
 @property (nonatomic, assign) CGPoint touchStart;
 @property (nonatomic, assign) CGPoint touchLast;
 @property (nonatomic, assign) NSInteger indexChange;
+@property (nonatomic, assign) NSInteger indexSelected;
 @end
 
 @implementation SSCChartView
@@ -41,17 +31,19 @@ static NSString *kSSCChartIndexChangeKey = @"indexChange";
     if (self) {
         self.backgroundColor = [UIColor yellowColor];
         _currentIndex = 0;
+        _indexSelected = -1;
         _candleBodyWidth = 7.;
         
-        [self addObserver:self forKeyPath:kSSCChartIndexChangeKey options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
+        [self addSubview:self.hiLabel];
         
+        [self setupObserver];
         [self setupGestures];
     }
     return self;
 }
 
 - (void)dealloc{
-    [self removeObserver:self forKeyPath:kSSCChartIndexChangeKey];
+    [self destroyObserver];
 }
 
 #pragma mark - data
@@ -75,9 +67,57 @@ static NSString *kSSCChartIndexChangeKey = @"indexChange";
             [self setNeedsDisplay];
         }
     }
+    if ([keyPath isEqualToString:kSSCChartIndexSelectedKey]) {
+        id oldValue =  [change objectForKey:NSKeyValueChangeOldKey];
+        id newValue = [change objectForKey:NSKeyValueChangeNewKey];
+        NSInteger oldChange = [oldValue integerValue];
+        NSInteger newChange = [newValue integerValue];
+        if (newChange != oldChange) {
+            [self setNeedsDisplay];
+        }
+    }
 }
 
+#pragma mark - select day
 
+-  (void)handleLongPress:(UILongPressGestureRecognizer*)gestureRecognizer {
+    CGPoint coords = [gestureRecognizer locationInView:self];
+    if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
+//        if ([self.delegate respondsToSelector:@selector(endOfSelecting)]) {
+//            [self.delegate endOfSelecting];
+//        }
+        [self setValue:@(-1) forKey:kSSCChartIndexSelectedKey];
+    }
+    else if (gestureRecognizer.state == UIGestureRecognizerStateBegan){
+        _indexSelected = -1;
+        [self checkSelectedTime:coords];
+    }else if (gestureRecognizer.state == UIGestureRecognizerStateChanged){
+        [self checkSelectedTime:coords];
+    }
+}
+
+- (void)checkSelectedTime:(CGPoint)touchPoint{
+    NSInteger arrayCount = _viewModelList.count;// 240; // 60 minites X 4 hours
+    CGFloat nodeWidth = (self.frame.size.width - kSSCChartViewMarginLeft) / arrayCount;
+    NSInteger tmp = (touchPoint.x - kSSCChartViewMarginLeft) / nodeWidth + 0.5;
+    NSInteger indexSelected = arrayCount - tmp;
+    indexSelected = MAX(0, indexSelected);
+    indexSelected = MIN(indexSelected, _viewModelList.count - 1);
+    [self setValue:@(indexSelected) forKey:kSSCChartIndexSelectedKey];
+    [self processSelectedIndex:indexSelected];
+}
+
+- (void)processSelectedIndex:(NSInteger)selectedIndex{
+    SSCDayViewModel *viewModel = _viewModelList[selectedIndex];
+    NSInteger dataIndex = selectedIndex + _currentIndex;
+    dataIndex = MAX(0, dataIndex);
+    dataIndex = MIN((_dataList.count - 1), dataIndex);
+    SSCDayModel *dayModel = _dataList[dataIndex];
+    
+    CGRect frame = CGRectMake(-1., viewModel.bodyEndY - 6., kSSCChartViewMarginLeft, 12);
+    _hiLabel.frame = frame;
+    _hiLabel.text = [NSString stringWithFormat:@"%.2f", dayModel.tClose];
+}
 #pragma mark - Gestures
 
 - (void)setupGestures{
@@ -85,9 +125,27 @@ static NSString *kSSCChartIndexChangeKey = @"indexChange";
     pan.delegate = self;
     [self addGestureRecognizer:pan];
     
+    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc]
+                                               initWithTarget:self
+                                               action:@selector(handleLongPress:)];
+    longPress.minimumPressDuration = .3;
+    [self addGestureRecognizer:longPress];
+    
 //    UIPinchGestureRecognizer *pinch = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinchGesture:)];
 //    pinch.delegate = self;
 //    [self addGestureRecognizer:pinch];
+}
+
+#pragma mark - Observe
+
+- (void)setupObserver{
+    [self addObserver:self forKeyPath:kSSCChartIndexChangeKey options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
+    [self addObserver:self forKeyPath:kSSCChartIndexSelectedKey options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
+}
+
+- (void)destroyObserver{
+    [self removeObserver:self forKeyPath:kSSCChartIndexChangeKey];
+    [self removeObserver:self forKeyPath:kSSCChartIndexSelectedKey];
 }
 
 #pragma mark - Rolling
@@ -122,86 +180,8 @@ static NSString *kSSCChartIndexChangeKey = @"indexChange";
     return NO;
 }
 
-- (void)buildViewData:(CGSize)viewSize candleWidth:(CGFloat)candleWidth currentIndex:(NSInteger)currentIndex{
 
-    if (currentIndex < 0) {
-        return;
-    }
-
-    // make view model for chart
-    CGFloat canvasWidth = viewSize.width - kSSCChartViewMarginLeft;
-    CGFloat mainBoxheight = viewSize.height * kSSCChartMainBoxHeightPercent;
-    CGFloat subBoxHeight = viewSize.height - mainBoxheight - kSSCChartViewGap;
-    NSUInteger candleCount = canvasWidth / (candleWidth + kSSCChartCandleSpace);
-    
-    candleCount = MIN(candleCount, (_dataList.count - currentIndex));
-    _viewModelList = [[NSMutableArray alloc] initWithCapacity:candleCount];
-    
-    // data will display
-    NSArray *dataWillDisplayList = [_dataList subarrayWithRange:NSMakeRange(currentIndex, candleCount)];
-    
-    double maxVoTurnover = [SSCCalc ssc_maxVoturnover:dataWillDisplayList];
-    double minPrice = [SSCCalc ssc_minPrice:dataWillDisplayList];
-    double maxPrice = [SSCCalc ssc_maxPrice:dataWillDisplayList];
-    
-    CGFloat priceScope = fabs(maxPrice - minPrice);
-    
-    for (NSInteger i = 0; i < candleCount; i++) {
-        SSCDayModel *aDataModel = dataWillDisplayList[i];
-        SSCDayViewModel *aViewModel = [SSCDayViewModel new];
-        
-        aViewModel.color = (aDataModel.pChange >= 0.) ? [UIColor ssc_riseColor].CGColor : [UIColor ssc_dropColor].CGColor;
-        
-        // open & close
-        CGFloat startP = fabs(maxPrice - aDataModel.tOpen) / priceScope;
-        aViewModel.bodyStartY = startP * mainBoxheight;
-        CGFloat endP = fabs(maxPrice - aDataModel.tClose) / priceScope;
-        CGFloat endY = endP * mainBoxheight;
-        endY = fabs(aViewModel.bodyStartY - endY) > 1. ? endY : aViewModel.bodyStartY + 1.; // height >= 1.
-        aViewModel.bodyEndY = endY;
-        
-        
-        // turnover
-        CGFloat voTurnoverP = aDataModel.voTurnover / maxVoTurnover;
-        aViewModel.turnoverStartY = viewSize.height - (subBoxHeight * voTurnoverP);
-        aViewModel.turnoverEndY = viewSize.height;
-        
-        // high & low
-        CGFloat wStartP = fabs(maxPrice - aDataModel.high) / priceScope;
-        aViewModel.wickStartY = wStartP * mainBoxheight;
-        CGFloat wEndP = fabs(maxPrice - aDataModel.low) / priceScope;
-        aViewModel.wickEndY = wEndP * mainBoxheight;
-        
-        // X asix
-        CGFloat distanceToRight = (kSSCChartCandleSpace + self.candleBodyWidth) * i + self.candleBodyWidth / 2.;
-        CGFloat centerX = viewSize.width - distanceToRight;
-        aViewModel.candleCenterX = centerX;
-        
-        // MA
-        NSInteger toIndex = currentIndex + i;
-
-        aViewModel.ma5Point = [self pointForMA:5 toIndex:toIndex maxPrice:maxPrice priceScope:priceScope mainBoxheight:mainBoxheight centerX:centerX dataList:_dataList];
-        aViewModel.ma10Point = [self pointForMA:10 toIndex:toIndex maxPrice:maxPrice priceScope:priceScope mainBoxheight:mainBoxheight centerX:centerX dataList:_dataList];
-        aViewModel.ma20Point = [self pointForMA:20 toIndex:toIndex maxPrice:maxPrice priceScope:priceScope mainBoxheight:mainBoxheight centerX:centerX dataList:_dataList];
-        
-        [_viewModelList addObject:aViewModel];
-    }
-}
-
-- (CGPoint)pointForMA:(NSInteger)dayCount toIndex:(NSInteger)toIndex maxPrice:(double)maxPrice priceScope:(double)priceScope mainBoxheight:(CGFloat)mainBoxheight centerX:(CGFloat)centerX dataList:(NSArray *)dataList{
-    NSInteger leftCount = dataList.count - toIndex;
-    NSRange range = NSMakeRange(toIndex, MIN(leftCount, dayCount));
-    NSArray *list = [dataList subarrayWithRange:range];
-    NSNumber *averageNum = [list valueForKeyPath:@"@avg.tClose"];
-    CGFloat maYPercent = fabs(maxPrice - averageNum.doubleValue) / priceScope;
-//    NSLog(@"per %f", maYPercent);
-    if (maYPercent > 1.) {
-        return CGPointMake(-1, -1);
-    }else{
-        return CGPointMake(centerX, maYPercent * mainBoxheight);
-    }
-    
-}
+#pragma mark - Draw
 
 - (void)drawRect:(CGRect)rect{
     [super drawRect:rect];
@@ -217,8 +197,6 @@ static NSString *kSSCChartIndexChangeKey = @"indexChange";
     CGContextSetLineWidth(context, 1.0f);
     CGContextSetAlpha(context, .5);
     
-    
-    
     CGFloat mainBoxheight = rect.size.height * kSSCChartMainBoxHeightPercent;
     CGFloat hLineY_0 = 0.;
     CGFloat hLineY_1 = mainBoxheight / 4.;
@@ -231,10 +209,9 @@ static NSString *kSSCChartIndexChangeKey = @"indexChange";
     CGFloat hLineY_b = rect.size.height;
     
     CGFloat marginLeft = kSSCChartViewMarginLeft;
-//    CGFloat boxWidth = rect.size.width - marginLeft;
     CGFloat rightX = rect.size.width;
     
-    [self buildViewData:rect.size candleWidth:_candleBodyWidth currentIndex:_currentIndex];
+    _viewModelList = [SSCContextHelper viewModelListFromRawData:_dataList viewSize:rect.size candleWidth:_candleBodyWidth currentIndex:_currentIndex];
     
     // horizontal line
     [self drawContext:context fromPoint:MPOINT(marginLeft, hLineY_0) toPoint:MPOINT(rightX, hLineY_0)];
@@ -292,7 +269,7 @@ static NSString *kSSCChartIndexChangeKey = @"indexChange";
     [textA4 drawInRect:rectA4 withAttributes:attr];
     
     CGRect rectB0 = CGRectMake(0., hLineY_a, marginLeft - 5., 8.);
-    CGRect rectB1 = CGRectMake(0., rect.size.height - 10., marginLeft - 5., 8.);
+    CGRect rectB1 = CGRectMake(0., rect.size.height - 12., marginLeft - 5., 12);
     
     NSString *textB0 = [NSString stringWithFormat:@"%.2f万", maxVoTurnover / 10000 / 100];
     NSString *textB1 = [NSString stringWithFormat:@"万手"];
@@ -327,6 +304,27 @@ static NSString *kSSCChartIndexChangeKey = @"indexChange";
     [self drawMALineContext:context type:5 color:[UIColor ssc_ma5Color]];
     [self drawMALineContext:context type:10 color:[UIColor ssc_ma10Color]];
     [self drawMALineContext:context type:20 color:[UIColor ssc_ma20Color]];
+    
+    // select
+    if (_indexSelected >= 0) {
+        
+        SSCDayViewModel *viewModel = _viewModelList[_indexSelected];
+        
+        
+        CGContextSetStrokeColorWithColor(context, [UIColor whiteColor].CGColor);
+        CGContextSetLineWidth(context, 1.0f);
+        CGContextSetAlpha(context, .5);
+        
+        CGPoint top = CGPointMake(viewModel.candleCenterX, 0.);
+        CGPoint bottom = CGPointMake(viewModel.candleCenterX, rect.size.height);
+        CGPoint left = CGPointMake(marginLeft, viewModel.bodyEndY);
+        CGPoint right = CGPointMake(rect.size.width, viewModel.bodyEndY);
+        [self drawContext:context fromPoint:top toPoint:bottom];
+        [self drawContext:context fromPoint:left toPoint:right];
+        
+        CGContextStrokePath(context);
+    }
+    _hiLabel.hidden = !(_indexSelected >= 0);
 }
 
 - (void)drawMALineContext:(CGContextRef)context type:(NSInteger)type color:(UIColor *)color{
@@ -396,6 +394,19 @@ static NSString *kSSCChartIndexChangeKey = @"indexChange";
 - (void)drawContext:(CGContextRef)context fromPoint:(CGPoint)fromPoint toPoint:(CGPoint)toPoint{
     CGContextMoveToPoint(context, fromPoint.x, fromPoint.y);
     CGContextAddLineToPoint(context, toPoint.x, toPoint.y);
+}
+
+#pragma mark - Properties
+
+- (UILabel *)hiLabel{
+    if (!_hiLabel) {
+        _hiLabel = [UILabel new];
+        _hiLabel.font = [UIFont systemFontOfSize:10.];
+        _hiLabel.textColor = [UIColor whiteColor];
+        _hiLabel.backgroundColor = [UIColor blackColor];
+        _hiLabel.adjustsFontSizeToFitWidth = YES;
+    }
+    return _hiLabel;
 }
 
 @end

@@ -10,6 +10,7 @@
 		949331431DBF5CCF00D6A36F /* SSCDayViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 949331421DBF5CCF00D6A36F /* SSCDayViewModel.m */; };
 		9493316C1DC06A0200D6A36F /* SSCConstaints.m in Sources */ = {isa = PBXBuildFile; fileRef = 9493316B1DC06A0200D6A36F /* SSCConstaints.m */; };
 		9493316F1DC0707F00D6A36F /* SSCCalc.m in Sources */ = {isa = PBXBuildFile; fileRef = 9493316E1DC0707F00D6A36F /* SSCCalc.m */; };
+		94DAC2391DC0D4FD006F1310 /* SSCContextHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 94DAC2381DC0D4FD006F1310 /* SSCContextHelper.m */; };
 		94E69BB51DBCB979009A08E1 /* SSCCSVParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 94E69BB41DBCB979009A08E1 /* SSCCSVParser.m */; };
 		94E69BBB1DBCE79D009A08E1 /* SSCChartView.m in Sources */ = {isa = PBXBuildFile; fileRef = 94E69BBA1DBCE79D009A08E1 /* SSCChartView.m */; };
 		94E69BBE1DBCE7E7009A08E1 /* SSCChartViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 94E69BBD1DBCE7E7009A08E1 /* SSCChartViewController.m */; };
@@ -35,6 +36,8 @@
 		9493316B1DC06A0200D6A36F /* SSCConstaints.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSCConstaints.m; sourceTree = "<group>"; };
 		9493316D1DC0707F00D6A36F /* SSCCalc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSCCalc.h; sourceTree = "<group>"; };
 		9493316E1DC0707F00D6A36F /* SSCCalc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSCCalc.m; sourceTree = "<group>"; };
+		94DAC2371DC0D4FD006F1310 /* SSCContextHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSCContextHelper.h; sourceTree = "<group>"; };
+		94DAC2381DC0D4FD006F1310 /* SSCContextHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSCContextHelper.m; sourceTree = "<group>"; };
 		94E69BB31DBCB979009A08E1 /* SSCCSVParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSCCSVParser.h; sourceTree = "<group>"; };
 		94E69BB41DBCB979009A08E1 /* SSCCSVParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSCCSVParser.m; sourceTree = "<group>"; };
 		94E69BB91DBCE79D009A08E1 /* SSCChartView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSCChartView.h; sourceTree = "<group>"; };
@@ -90,6 +93,8 @@
 				9493316B1DC06A0200D6A36F /* SSCConstaints.m */,
 				9493316D1DC0707F00D6A36F /* SSCCalc.h */,
 				9493316E1DC0707F00D6A36F /* SSCCalc.m */,
+				94DAC2371DC0D4FD006F1310 /* SSCContextHelper.h */,
+				94DAC2381DC0D4FD006F1310 /* SSCContextHelper.m */,
 			);
 			name = util;
 			sourceTree = "<group>";
@@ -347,6 +352,7 @@
 				94E69BBB1DBCE79D009A08E1 /* SSCChartView.m in Sources */,
 				94EF5FA11DBC67B5007C89F6 /* AppDelegate.m in Sources */,
 				9493316C1DC06A0200D6A36F /* SSCConstaints.m in Sources */,
+				94DAC2391DC0D4FD006F1310 /* SSCContextHelper.m in Sources */,
 				94EF5FB91DBCAA17007C89F6 /* SSCDataSource.m in Sources */,
 				94E69BC71DBCECCA009A08E1 /* UIColor+SSCColorStyle.m in Sources */,
 				94E69BBE1DBCE7E7009A08E1 /* SSCChartViewController.m in Sources */,
