@@ -1,5 +1,5 @@
 #SUStockChart
-A demo of the stock market candlesticks chart.
+A candlesticks chart demo of the stock market.
 
 ##How
 
